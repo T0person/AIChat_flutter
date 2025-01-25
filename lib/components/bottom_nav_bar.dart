@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import '../providers/chat_provider.dart';
 
 class BottomNavBar extends StatelessWidget {
   final int selectedIndex;
@@ -10,11 +12,27 @@ class BottomNavBar extends StatelessWidget {
     required this.onItemTapped,
   });
 
+  void _showAuthRequiredSnackBar(BuildContext context) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('Для доступа требуется авторизация'),
+        duration: Duration(seconds: 2),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return BottomNavigationBar(
       currentIndex: selectedIndex,
-      onTap: onItemTapped,
+      onTap: (index) {
+        final chatProvider = Provider.of<ChatProvider>(context, listen: false);
+        if (index != 2 && !chatProvider.isAuthenticated) {
+          _showAuthRequiredSnackBar(context);
+          return;
+        }
+        onItemTapped(index);
+      },
       type: BottomNavigationBarType.fixed,
       backgroundColor: const Color(0xFF262626),
       selectedItemColor: Colors.blue,

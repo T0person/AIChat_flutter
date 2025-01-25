@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import '../providers/chat_provider.dart';
 
 // Основной класс страницы, наследуется от StatefulWidget
 class LoginScreen extends StatefulWidget {
@@ -88,7 +90,16 @@ class _NewPageState extends State<LoginScreen> {
                   return;
                 }
 
-                // Если проверки пройдены, можно продолжить обработку
+                // Если проверки пройдены, устанавливаем авторизацию
+                final chatProvider =
+                    Provider.of<ChatProvider>(context, listen: false);
+                chatProvider.setAuthenticated(true);
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text('Успешная авторизация!'),
+                  ),
+                );
+                _controller.clear();
               },
               child: const Text('Отправить'),
             ),

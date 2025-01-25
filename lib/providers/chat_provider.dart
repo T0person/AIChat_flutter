@@ -31,6 +31,17 @@ class ChatProvider with ChangeNotifier {
   String _balance = '\$0.00';
   // Флаг загрузки
   bool _isLoading = false;
+  // Флаг авторизации
+  bool _isAuthenticated = false;
+
+  // Геттер для состояния авторизации
+  bool get isAuthenticated => _isAuthenticated;
+
+  // Метод для установки состояния авторизации
+  void setAuthenticated(bool value) {
+    _isAuthenticated = value;
+    notifyListeners();
+  }
 
   // Метод для логирования сообщений
   void _log(String message) {
