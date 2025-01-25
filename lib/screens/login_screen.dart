@@ -14,6 +14,8 @@ class LoginScreen extends StatefulWidget {
 class _NewPageState extends State<LoginScreen> {
   // Состояние для хранения выбранного значения
   String? _selectedValue;
+  // Контроллер для текстового поля
+  final TextEditingController _controller = TextEditingController();
 
   // Основной метод построения интерфейса
   @override
@@ -53,18 +55,40 @@ class _NewPageState extends State<LoginScreen> {
             const SizedBox(height: 20),
             // Поле ввода
             TextField(
+              controller: _controller,
               obscureText: true,
               obscuringCharacter: '*',
               decoration: const InputDecoration(
                 border: OutlineInputBorder(),
-                labelText: 'Введите текст',
+                labelText: 'Введите API ключ',
               ),
             ),
             const SizedBox(height: 20),
             // Кнопка
             ElevatedButton(
               onPressed: () {
-                // Обработка нажатия кнопки
+                final text = _controller.text;
+                if (text.length != 73) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text('Ключ должен быть 73 символа'),
+                    ),
+                  );
+                  return;
+                }
+
+                if (!text.startsWith('sk-or-vv') &&
+                    !text.startsWith('sk-or-v1')) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text(
+                          'Ключ должен начинаться с "sk-or-vv" или "sk-or-v1"'),
+                    ),
+                  );
+                  return;
+                }
+
+                // Если проверки пройдены, можно продолжить обработку
               },
               child: const Text('Отправить'),
             ),
