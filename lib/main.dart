@@ -134,7 +134,7 @@ class _MainNavigationWrapperState extends State<MainNavigationWrapper> {
 
   final List<Widget> _screens = [
     const ChatScreen(),
-    const AnaliticSceen(),
+    const AnaliticScreen(),
     const LoginScreen(),
   ];
 
