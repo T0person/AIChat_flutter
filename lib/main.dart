@@ -8,8 +8,12 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:provider/provider.dart';
 // Импорт кастомного провайдера для управления состоянием чата
 import 'providers/chat_provider.dart';
-// Импорт основного экрана чата
+// Импорт экранов приложения
 import 'screens/chat_screen.dart';
+import 'screens/analitic_screen.dart';
+import 'screens/login_screen.dart';
+// Импорт компонентов
+import 'components/bottom_nav_bar.dart';
 
 // Виджет для обработки и отлова ошибок в приложении
 class ErrorBoundaryWidget extends StatelessWidget {
@@ -112,6 +116,41 @@ void main() async {
             ),
           ),
         ),
+      ),
+    );
+  }
+}
+
+// Класс для управления навигацией между экранами
+class MainNavigationWrapper extends StatefulWidget {
+  const MainNavigationWrapper({super.key});
+
+  @override
+  State<MainNavigationWrapper> createState() => _MainNavigationWrapperState();
+}
+
+class _MainNavigationWrapperState extends State<MainNavigationWrapper> {
+  int _selectedIndex = 2;
+
+  final List<Widget> _screens = [
+    const ChatScreen(),
+    const AnaliticSceen(),
+    const LoginScreen(),
+  ];
+
+  void _onItemTapped(int index) {
+    setState(() {
+      _selectedIndex = index;
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: _screens[_selectedIndex],
+      bottomNavigationBar: BottomNavBar(
+        selectedIndex: _selectedIndex,
+        onItemTapped: _onItemTapped,
       ),
     );
   }
@@ -233,8 +272,8 @@ class MyApp extends StatelessWidget {
             ),
           ),
         ),
-        // Основной экран приложения
-        home: const ChatScreen(),
+        // Основной экран приложения с навигацией
+        home: const MainNavigationWrapper(),
       ),
     );
   }

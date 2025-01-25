@@ -1,232 +1,9 @@
-// Импорт основных виджетов Flutter
 import 'package:flutter/material.dart';
-// Импорт для работы с системными сервисами (буфер обмена)
-import 'package:flutter/services.dart';
-// Импорт для работы с провайдерами состояния
 import 'package:provider/provider.dart';
-// Импорт для работы со шрифтами Google
-import 'package:google_fonts/google_fonts.dart';
-// Импорт провайдера чата
+import '../components/error_boundary.dart';
+import '../components/message_bubble.dart';
+import '../components/message_input.dart';
 import '../providers/chat_provider.dart';
-// Импорт модели сообщения
-import '../models/message.dart';
-
-// Виджет для обработки ошибок в UI
-class ErrorBoundary extends StatelessWidget {
-  final Widget child;
-
-  const ErrorBoundary({super.key, required this.child});
-
-  @override
-  Widget build(BuildContext context) {
-    return Builder(
-      builder: (context) {
-        try {
-          return child;
-        } catch (error, stackTrace) {
-          debugPrint('Error in ErrorBoundary: $error');
-          debugPrint('Stack trace: $stackTrace');
-          return Container(
-            padding: const EdgeInsets.all(12),
-            color: Colors.red,
-            child: Text(
-              'Error: $error',
-              style: const TextStyle(color: Colors.white, fontSize: 12),
-            ),
-          );
-        }
-      },
-    );
-  }
-}
-
-// Виджет для отображения отдельного сообщения в чате
-class _MessageBubble extends StatelessWidget {
-  final ChatMessage message;
-  final List<ChatMessage> messages;
-  final int index;
-
-  const _MessageBubble({
-    required this.message,
-    required this.messages,
-    required this.index,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    return Align(
-      alignment: message.isUser ? Alignment.centerRight : Alignment.centerLeft,
-      child: Column(
-        crossAxisAlignment:
-            message.isUser ? CrossAxisAlignment.end : CrossAxisAlignment.start,
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Container(
-            constraints: BoxConstraints(
-              maxWidth: MediaQuery.of(context).size.width * 0.75,
-            ),
-            margin: const EdgeInsets.symmetric(vertical: 6.0),
-            padding: const EdgeInsets.all(10.0),
-            decoration: BoxDecoration(
-              color: message.isUser
-                  ? const Color(0xFF1A73E8)
-                  : const Color(0xFF424242),
-              borderRadius: BorderRadius.circular(16),
-            ),
-            child: SelectableText(
-              message.cleanContent,
-              style: GoogleFonts.roboto(
-                color: Colors.white,
-                fontSize: 13,
-                locale: const Locale('ru', 'RU'),
-              ),
-            ),
-          ),
-          if (message.tokens != null || message.cost != null)
-            Padding(
-              padding: const EdgeInsets.only(top: 4),
-              child: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  if (message.tokens != null)
-                    Text(
-                      'Токенов: ${message.tokens}',
-                      style: const TextStyle(
-                        color: Colors.white54,
-                        fontSize: 11,
-                      ),
-                    ),
-                  if (message.tokens != null && message.cost != null)
-                    const SizedBox(width: 8),
-                  if (message.cost != null)
-                    Consumer<ChatProvider>(
-                      builder: (context, chatProvider, child) {
-                        final isVsetgpt =
-                            chatProvider.baseUrl?.contains('vsetgpt.ru') ==
-                                true;
-                        return Text(
-                          message.cost! < 0.001
-                              ? isVsetgpt
-                                  ? 'Стоимость: <0.001₽'
-                                  : 'Стоимость: <\$0.001'
-                              : isVsetgpt
-                                  ? 'Стоимость: ${message.cost!.toStringAsFixed(3)}₽'
-                                  : 'Стоимость: \$${message.cost!.toStringAsFixed(3)}',
-                          style: const TextStyle(
-                            color: Colors.white54,
-                            fontSize: 11,
-                          ),
-                        );
-                      },
-                    ),
-                  IconButton(
-                    icon: const Icon(Icons.copy, size: 16),
-                    color: Colors.white54,
-                    padding: const EdgeInsets.all(4),
-                    constraints: const BoxConstraints(
-                      minWidth: 24,
-                      minHeight: 24,
-                    ),
-                    onPressed: () {
-                      final textToCopy = message.isUser
-                          ? message.cleanContent
-                          : '${messages[index - 1].cleanContent}\n\n${message.cleanContent}';
-                      Clipboard.setData(ClipboardData(text: textToCopy));
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
-                          content: Text('Текст скопирован',
-                              style: TextStyle(fontSize: 12)),
-                          backgroundColor: Colors.green,
-                          duration: Duration(seconds: 1),
-                        ),
-                      );
-                    },
-                    tooltip: 'Копировать текст',
-                  ),
-                  const Spacer()
-                ],
-              ),
-            ),
-        ],
-      ),
-    );
-  }
-}
-
-// Виджет для ввода сообщений
-class _MessageInput extends StatefulWidget {
-  final void Function(String) onSubmitted;
-
-  const _MessageInput({required this.onSubmitted});
-
-  @override
-  _MessageInputState createState() => _MessageInputState();
-}
-
-// Состояние виджета ввода сообщений
-class _MessageInputState extends State<_MessageInput> {
-  // Контроллер для управления текстовым полем
-  final _controller = TextEditingController();
-  // Флаг, указывающий, вводится ли сейчас сообщение
-  bool _isComposing = false;
-
-  @override
-  void dispose() {
-    _controller.dispose();
-    super.dispose();
-  }
-
-  void _handleSubmitted(String text) {
-    _controller.clear();
-    setState(() {
-      _isComposing = false;
-    });
-    widget.onSubmitted(text);
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      margin: const EdgeInsets.symmetric(horizontal: 6.0),
-      decoration: BoxDecoration(
-        color: const Color(0xFF333333),
-        borderRadius: BorderRadius.circular(16),
-      ),
-      child: Row(
-        children: [
-          Expanded(
-            child: TextField(
-              controller: _controller,
-              onChanged: (String text) {
-                setState(() {
-                  _isComposing = text.trim().isNotEmpty;
-                });
-              },
-              onSubmitted: _isComposing ? _handleSubmitted : null,
-              decoration: const InputDecoration(
-                hintText: 'Введите сообщение...',
-                hintStyle: TextStyle(color: Colors.white54, fontSize: 13),
-                border: InputBorder.none,
-                contentPadding: EdgeInsets.symmetric(
-                  horizontal: 12.0,
-                  vertical: 8.0,
-                ),
-              ),
-              style: const TextStyle(color: Colors.white, fontSize: 13),
-            ),
-          ),
-          IconButton(
-            icon: const Icon(Icons.send, size: 20),
-            color: _isComposing ? Colors.blue : Colors.grey,
-            onPressed:
-                _isComposing ? () => _handleSubmitted(_controller.text) : null,
-            padding: const EdgeInsets.all(8),
-          ),
-        ],
-      ),
-    );
-  }
-}
 
 // Основной экран чата
 class ChatScreen extends StatelessWidget {
@@ -445,7 +222,8 @@ class ChatScreen extends StatelessWidget {
           itemCount: chatProvider.messages.length,
           itemBuilder: (context, index) {
             final message = chatProvider.messages[index];
-            return _MessageBubble(
+            return MessageBubble(
+              key: ValueKey(index),
               message: message,
               messages: chatProvider.messages,
               index: index,
@@ -464,7 +242,8 @@ class ChatScreen extends StatelessWidget {
       child: Row(
         children: [
           Expanded(
-            child: _MessageInput(
+            child: MessageInput(
+              key: const ValueKey('message_input'),
               onSubmitted: (String text) {
                 if (text.trim().isNotEmpty) {
                   context.read<ChatProvider>().sendMessage(text);
