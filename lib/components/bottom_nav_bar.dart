@@ -27,7 +27,7 @@ class BottomNavBar extends StatelessWidget {
       currentIndex: selectedIndex,
       onTap: (index) {
         final chatProvider = Provider.of<ChatProvider>(context, listen: false);
-        if (index != 2 && !chatProvider.isAuthenticated) {
+        if (index != 3 && !chatProvider.isAuthenticated) {
           _showAuthRequiredSnackBar(context);
           return;
         }
@@ -47,6 +47,10 @@ class BottomNavBar extends StatelessWidget {
         BottomNavigationBarItem(
           icon: Icon(Icons.analytics),
           label: 'Аналитика',
+        ),
+        BottomNavigationBarItem(
+          icon: Icon(Icons.bar_chart),
+          label: 'Расходы',
         ),
         BottomNavigationBarItem(
           icon: Icon(Icons.login),

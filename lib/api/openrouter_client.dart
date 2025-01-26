@@ -4,36 +4,24 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 // Import Flutter core classes
 import 'package:flutter/foundation.dart';
-// Import package for working with .env files
-import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 // Класс клиента для работы с API OpenRouter
 class OpenRouterClient {
   // API ключ для авторизации
-  final String? apiKey;
+  final String apiKey;
   // Базовый URL API
-  final String? baseUrl;
+  final String baseUrl;
   // Заголовки HTTP запросов
   final Map<String, String> headers;
 
-  // Единственный экземпляр класса (Singleton)
-  static final OpenRouterClient _instance = OpenRouterClient._internal();
-
-  // Фабричный метод для получения экземпляра
-  factory OpenRouterClient() {
-    return _instance;
-  }
-
-  // Приватный конструктор для реализации Singleton
-  OpenRouterClient._internal()
-      : apiKey =
-            dotenv.env['OPENROUTER_API_KEY'], // Получение API ключа из .env
-        baseUrl = dotenv.env['BASE_URL'], // Получение базового URL из .env
-        headers = {
-          'Authorization':
-              'Bearer ${dotenv.env['OPENROUTER_API_KEY']}', // Заголовок авторизации
-          'Content-Type': 'application/json', // Указание типа контента
-          'X-Title': 'AI Chat Flutter', // Название приложения
+  // Конструктор класса
+  OpenRouterClient({
+    required this.apiKey,
+    required this.baseUrl,
+  }) : headers = {
+          'Authorization': 'Bearer $apiKey',
+          'Content-Type': 'application/json',
+          'X-Title': 'AI Chat Flutter',
         } {
     // Инициализация клиента
     _initializeClient();
@@ -45,15 +33,6 @@ class OpenRouterClient {
       if (kDebugMode) {
         print('Initializing OpenRouterClient...');
         print('Base URL: $baseUrl');
-      }
-
-      // Проверка наличия API ключа
-      if (apiKey == null) {
-        throw Exception('OpenRouter API key not found in .env');
-      }
-      // Проверка наличия базового URL
-      if (baseUrl == null) {
-        throw Exception('BASE_URL not found in .env');
       }
 
       if (kDebugMode) {
@@ -141,10 +120,8 @@ class OpenRouterClient {
         'messages': [
           {'role': 'user', 'content': message} // Сообщение пользователя
         ],
-        'max_tokens': int.parse(dotenv.env['MAX_TOKENS'] ??
-            '1000'), // Максимальное количество токенов
-        'temperature': double.parse(
-            dotenv.env['TEMPERATURE'] ?? '0.7'), // Температура генерации
+        'max_tokens': 1000, // Максимальное количество токенов
+        'temperature': 0.7, // Температура генерации
         'stream': false, // Отключение потоковой передачи
       };
 
@@ -188,7 +165,7 @@ class OpenRouterClient {
     try {
       // Выполнение GET запроса для получения баланса
       final response = await http.get(
-        Uri.parse(baseUrl?.contains('vsegpt.ru') == true
+        Uri.parse(baseUrl.contains('api.vsegpt.ru') == true
             ? '$baseUrl/balance'
             : '$baseUrl/credits'),
         headers: headers,
@@ -203,7 +180,7 @@ class OpenRouterClient {
         // Парсинг данных о балансе
         final data = json.decode(response.body);
         if (data != null && data['data'] != null) {
-          if (baseUrl?.contains('vsegpt.ru') == true) {
+          if (baseUrl.contains('api.vsegpt.ru') == true) {
             final credits =
                 double.tryParse(data['data']['credits'].toString()) ??
                     0.0; // Доступно средств
@@ -216,7 +193,7 @@ class OpenRouterClient {
           }
         }
       }
-      return baseUrl?.contains('vsegpt.ru') == true
+      return baseUrl.contains('api.vsegpt.ru') == true
           ? '0.00₽'
           : '\$0.00'; // Возвращение нулевого баланса по умолчанию
     } catch (e) {
@@ -230,10 +207,10 @@ class OpenRouterClient {
   // Метод форматирования цен
   String formatPricing(double pricing) {
     try {
-      if (baseUrl?.contains('vsegpt.ru') == true) {
+      if (baseUrl.contains('api.vsegpt.ru') == true) {
         return '${pricing.toStringAsFixed(3)}₽/K';
       } else {
-        return '\$${(pricing * 1000000).toStringAsFixed(3)}/M';
+        return '\$${(pricing).toStringAsFixed(3)}/M';
       }
     } catch (e) {
       if (kDebugMode) {

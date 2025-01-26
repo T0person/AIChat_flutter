@@ -3,6 +3,7 @@ import 'dart:convert';
 // Импорт библиотеки для работы с файловой системой
 import 'dart:io';
 // Импорт основных классов Flutter
+import 'package:ai_chat_flutter/screens/login_screen.dart';
 import 'package:flutter/foundation.dart';
 // Импорт пакета для получения путей к директориям
 import 'package:path_provider/path_provider.dart';
@@ -18,7 +19,8 @@ import '../services/analytics_service.dart';
 // Основной класс провайдера для управления состоянием чата
 class ChatProvider with ChangeNotifier {
   // Клиент для работы с API
-  final OpenRouterClient _api = OpenRouterClient();
+  final OpenRouterClient _api = OpenRouterClient(
+      apiKey: authProvider.api, baseUrl: authProvider.provider);
   // Список сообщений чата
   final List<ChatMessage> _messages = [];
   // Логи для отладки

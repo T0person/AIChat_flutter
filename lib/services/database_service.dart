@@ -8,8 +8,9 @@ import 'package:sqflite/sqflite.dart';
 import 'package:flutter/foundation.dart';
 // Импорт FFI реализации для desktop платформ
 import 'package:sqflite_common_ffi/sqflite_ffi.dart' if (dart.library.html) '';
-// Импорт модели сообщения
+// Импорт моделей
 import '../models/message.dart';
+import '../models/daily_expense.dart';
 
 // Класс сервиса для работы с базой данных
 class DatabaseService {
@@ -125,6 +126,35 @@ class DatabaseService {
       await db.delete('messages'); // Удаление всех записей из таблицы
     } catch (e) {
       debugPrint('Error clearing history: $e'); // Логирование ошибок
+    }
+  }
+
+  // Метод получения ежедневных расходов
+  Future<List<DailyExpense>> getDailyExpenses() async {
+    try {
+      final db = await database;
+
+      // Запрос для группировки по дням и суммирования затрат
+      final result = await db.rawQuery('''
+        SELECT 
+          DATE(timestamp) as day,
+          SUM(cost) as total
+        FROM messages
+        WHERE cost IS NOT NULL
+        GROUP BY day
+        ORDER BY day ASC
+      ''');
+
+      // Преобразование результата в список DailyExpense
+      return result
+          .map((row) => DailyExpense(
+                date: DateTime.parse(row['day'] as String),
+                amount: row['total'] as double,
+              ))
+          .toList();
+    } catch (e) {
+      debugPrint('Error getting daily expenses: $e');
+      return [];
     }
   }
 

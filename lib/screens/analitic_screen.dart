@@ -85,7 +85,7 @@ class AnaliticScreen extends StatelessWidget {
                               chatProvider.baseUrl?.contains('vsetgpt.ru') ==
                                       true
                                   ? 'Стоимость: ${entry.value['cost'] < 1e-8 ? '0.0' : entry.value['cost'].toStringAsFixed(8)}₽'
-                                  : 'Стоимость: \$${entry.value['cost'] < 1e-8 ? '0.0' : entry.value['cost'].toStringAsFixed(8)}',
+                                  : 'Стоимость: ${entry.value['cost'] < 1e-8 ? '0.0' : entry.value['cost'].toStringAsFixed(8)}₽',
                               style: const TextStyle(fontSize: 14),
                             ),
                           ],

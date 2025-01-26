@@ -1,6 +1,29 @@
+import 'package:ai_chat_flutter/providers/chat_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../providers/chat_provider.dart';
+
+class AuthProvider {
+  String? _api;
+  String? _provider;
+
+  String get api {
+    return _api ?? 'None';
+  }
+
+  set api(String newApi) {
+    _api = newApi;
+  }
+
+  String get provider {
+    return _provider ?? 'None';
+  }
+
+  set provider(String newProvider) {
+    _provider = newProvider;
+  }
+}
+
+AuthProvider authProvider = AuthProvider();
 
 // Основной класс страницы, наследуется от StatefulWidget
 class LoginScreen extends StatefulWidget {
@@ -15,7 +38,7 @@ class LoginScreen extends StatefulWidget {
 // Класс состояния страницы
 class _NewPageState extends State<LoginScreen> {
   // Состояние для хранения выбранного значения
-  String? _selectedValue;
+  // String? _selectedValue;
   // Контроллер для текстового поля
   final TextEditingController _controller = TextEditingController();
 
@@ -34,27 +57,12 @@ class _NewPageState extends State<LoginScreen> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            // Выпадающее меню
-            DropdownButton<String>(
-              value: _selectedValue,
-              hint: const Text('Выберите значение'),
-              items: const [
-                DropdownMenuItem(
-                  value: 'OpenRouter',
-                  child: Text('OpenRouter'),
-                ),
-                DropdownMenuItem(
-                  value: 'VSEGPT',
-                  child: Text('VSEGPT'),
-                ),
-              ],
-              onChanged: (value) {
-                setState(() {
-                  _selectedValue = value;
-                });
-              },
-            ),
-            const SizedBox(height: 20),
+            Text("Выберите провайдера"),
+            Text("Введите API-key:"),
+            Text(
+                "Если ключ начинается с 'sk-or-vv-...' будет использоваться поставщик VSEGPT"),
+            Text(
+                "Если ключ начинается с 'sk-or-v1-...' будет поставщик OpenRouter"),
             // Поле ввода
             TextField(
               controller: _controller,
@@ -70,36 +78,39 @@ class _NewPageState extends State<LoginScreen> {
             ElevatedButton(
               onPressed: () {
                 final text = _controller.text;
-                if (text.length != 73) {
+
+                if (text.startsWith('sk-or-v1') && text.length == 73) {
+                  authProvider.api = text;
+                  authProvider._provider = "https://openrouter.ai/api/v1";
+                  // Если проверки пройдены, устанавливаем авторизацию
+                  final chatProvider =
+                      Provider.of<ChatProvider>(context, listen: false);
+                  chatProvider.setAuthenticated(true);
                   ScaffoldMessenger.of(context).showSnackBar(
                     const SnackBar(
-                      content: Text('Ключ должен быть 73 символа'),
+                      content: Text('Успешная авторизация OpenRoute!'),
                     ),
                   );
-                  return;
-                }
-
-                if (!text.startsWith('sk-or-vv') &&
-                    !text.startsWith('sk-or-v1')) {
+                } else if (text.startsWith('sk-or-vv') && text.length == 73) {
+                  authProvider.api = text;
+                  authProvider._provider = "https://api.vsegpt.ru/v1";
+                  // Если проверки пройдены, устанавливаем авторизацию
+                  final chatProvider =
+                      Provider.of<ChatProvider>(context, listen: false);
+                  chatProvider.setAuthenticated(true);
                   ScaffoldMessenger.of(context).showSnackBar(
                     const SnackBar(
-                      content: Text(
-                          'Ключ должен начинаться с "sk-or-vv" или "sk-or-v1"'),
+                      content: Text('Успешная авторизация VSEGPT!'),
                     ),
                   );
-                  return;
+                  _controller.clear();
+                } else {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text('Неверный ключ или провайдер'),
+                    ),
+                  );
                 }
-
-                // Если проверки пройдены, устанавливаем авторизацию
-                final chatProvider =
-                    Provider.of<ChatProvider>(context, listen: false);
-                chatProvider.setAuthenticated(true);
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text('Успешная авторизация!'),
-                  ),
-                );
-                _controller.clear();
               },
               child: const Text('Отправить'),
             ),

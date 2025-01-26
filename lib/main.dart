@@ -1,7 +1,8 @@
 // Импорт основных виджетов Flutter
+import 'package:ai_chat_flutter/screens/plot_screen.dart';
 import 'package:flutter/material.dart';
 // Импорт пакета для работы с .env файлами
-import 'package:flutter_dotenv/flutter_dotenv.dart';
+// import 'package:flutter_dotenv/flutter_dotenv.dart';
 // Импорт пакета для локализации приложения
 import 'package:flutter_localizations/flutter_localizations.dart';
 // Импорт пакета для работы с провайдерами состояния
@@ -86,13 +87,13 @@ void main() async {
     };
 
     // Загрузка переменных окружения из .env файла
-    await dotenv.load(fileName: ".env");
-    // Логирование успешной загрузки
-    debugPrint('Environment loaded');
-    // Проверка наличия API ключа
-    debugPrint('API Key present: ${dotenv.env['OPENROUTER_API_KEY'] != null}');
-    // Логирование базового URL
-    debugPrint('Base URL: ${dotenv.env['BASE_URL']}');
+    // await dotenv.load(fileName: ".env");
+    // // Логирование успешной загрузки
+    // debugPrint('Environment loaded');
+    // // Проверка наличия API ключа
+    // debugPrint('API Key present: ${dotenv.env['OPENROUTER_API_KEY'] != null}');
+    // // Логирование базового URL
+    // debugPrint('Base URL: ${dotenv.env['BASE_URL']}');
 
     // Запуск приложения с обработчиком ошибок
     runApp(const ErrorBoundaryWidget(child: MyApp()));
@@ -130,11 +131,12 @@ class MainNavigationWrapper extends StatefulWidget {
 }
 
 class _MainNavigationWrapperState extends State<MainNavigationWrapper> {
-  int _selectedIndex = 2;
+  int _selectedIndex = 3;
 
   final List<Widget> _screens = [
     const ChatScreen(),
     const AnaliticScreen(),
+    const PlotScreen(),
     const LoginScreen(),
   ];
 

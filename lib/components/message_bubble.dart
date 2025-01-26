@@ -67,7 +67,7 @@ class MessageBubble extends StatelessWidget {
                     Consumer<ChatProvider>(
                       builder: (context, chatProvider, child) {
                         final isVsetgpt =
-                            chatProvider.baseUrl?.contains('vsetgpt.ru') ==
+                            chatProvider.baseUrl?.contains('api.vsegpt.ru') ==
                                 true;
                         return Text(
                           message.cost! < 0.001
